@@ -1,63 +1,64 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
-app.use(express.json());
+const PORT = 3000;
+
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(__dirname));
 
-// --- AQUÍ VA TU CADENA DE CONEXIÓN REAL ---
-// RECUERDA: Cambia <password> por tu contraseña y quita los símbolos < >
-const MONGO_URI = "mongodb://atlas-sql-6a2a769ae76cd6a0fba1e934-d3uovb.a.query.mongodb.net/clinic_mex?ssl=true&authSource=admin";
+// Link Anti-DNS (Expandido para evitar errores en la escuela)
+const URI = 'mongodb://a24308051280879_db_user:20090415@ac-hyfy9tj-shard-00-00.yjwti8q.mongodb.net:27017,ac-hyfy9tj-shard-00-01.yjwti8q.mongodb.net:27017,ac-hyfy9tj-shard-00-02.yjwti8q.mongodb.net:27017/clinic_mex?ssl=true&replicaSet=atlas-b44g7w-shard-0&authSource=admin&retryWrites=true&w=majority';
 
-mongoose.connect(MONGO_URI)
-  .then(() => console.log("¡Conectado exitosamente a MongoDB!"))
-  .catch(err => console.error("Error al conectar:", err));
+mongoose.connect(URI)
+  .then(() => console.log('Conexión exitosa a MongoDB (Consultorio OVC)'))
+  .catch(err => console.error('Fallo al conectar:', err));
 
-// Definición del esquema (contrato de los datos)
+// Esquemas y Modelos
 const Paciente = mongoose.model('Paciente', new mongoose.Schema({
-  nombre: String,
-  edad: String,
-  sexo: String,
-  ocupacion: String,
-  diagnostico: String,
-  tratamiento: String
-}));
+    curp: String, nombre: String, apellido: String, fecha_nac: String,
+    genero: String, telefono: String, email: String, direccion: String,
+    tipo_sangre: String, fecha_reg: String
+}), 'pacientes');
 
-// Ruta para recibir los datos del formulario
-app.post('/api/pacientes', async (req, res) => {
-  try {
-    const nuevoPaciente = new Paciente(req.body);
-    await nuevoPaciente.save();
-    res.json({ mensaje: "Paciente guardado con éxito" });
-  } catch (error) {
-    res.status(500).json({ error: "Error al guardar en la BD" });
-  }
-});
+const Medico = mongoose.model('Medico', new mongoose.Schema({
+    nombre: String, apellido: String, especialidad: String,
+    telefono: String, email: String, cedula: String, horario: String
+}), 'medicos');
 
-app.listen(5000, () => console.log("Servidor escuchando en puerto 5000"));
+const Inventario = mongoose.model('Inventario', new mongoose.Schema({
+    nombre: String, descripcion: String, laboratorio: String,
+    existencia: Number, precio: String
+}), 'inventarios');
 
-async function enviarDatos() {
-    // Obtenemos los valores de los inputs
-    const datos = {
-      nombre: document.getElementById("nombre").value,
-      edad: document.getElementById("edad").value,
-      sexo: document.getElementById("sexo").value,
-      ocupacion: document.getElementById("ocupacion").value,
-      diagnostico: document.getElementById("diagnostico").value,
-      tratamiento: document.getElementById("tratamiento").value
-    };
-  
-    try {
-      const respuesta = await fetch("http://localhost:5000/api/pacientes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos)
-      });
-  
-      const resultado = await respuesta.json();
-      alert(resultado.mensaje || "Error al registrar");
-    } catch (error) {
-      console.error("No se pudo conectar al servidor", error);
-    }
-  }
+const Cita = mongoose.model('Cita', new mongoose.Schema({
+    curp_paciente: String, id_medico: String, fecha: String,
+    hora: String, motivo: String, estado: String
+}), 'citas');
+
+const Pago = mongoose.model('Pago', new mongoose.Schema({
+    id_cita: String, monto: String, metodo_pago: String,
+    fecha_pago: String, estado_pago: String
+}), 'pagos');
+
+// Utilidad para crear rutas CRUD
+function crearRutas(app, rutaBase, Modelo) {
+    app.get(rutaBase, (req, res) => Modelo.find().then(d => res.json(d)));
+    app.post(rutaBase, (req, res) => new Modelo(req.body).save().then(d => res.json(d)));
+    app.put(`${rutaBase}/:id`, (req, res) => Modelo.findByIdAndUpdate(req.params.id, req.body).then(() => res.json({ok: 1})));
+    app.delete(`${rutaBase}/:id`, (req, res) => Modelo.findByIdAndDelete(req.params.id).then(() => res.json({ok: 1})));
+}
+
+crearRutas(app, '/api/pacientes', Paciente);
+crearRutas(app, '/api/medicos', Medico);
+crearRutas(app, '/api/inventario', Inventario);
+crearRutas(app, '/api/citas', Cita);
+crearRutas(app, '/api/pagos', Pago);
+
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+
+app.listen(PORT, () => console.log(`Servidor de OVC activo en puerto ${PORT}`));

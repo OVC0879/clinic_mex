@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citas - Consultorio OVC</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Consultorio Médico OVC</h1>
+        <img src="img.jpg" alt="Consultorio Médico">
+    </header>
+
+    <nav class="menu-nav">
+        <a href="index.html">Inicio</a>
+        <a href="pacientes.html">Pacientes</a>
+        <a href="medicos.html">Médicos</a>
+        <a href="inventario.html">Inventario</a>
+        <a href="citas.html" class="active">Citas</a>
+        <a href="pagos.html">Pagos</a>
+    </nav>
+
+    <article>
+        <h2>Gestión de Citas</h2>
+        <div class="seccion-grid">
+            <div class="formulario-contenedor">
+                <h3>Agendar Cita</h3>
+                <form id="form-citas">
+                    <input type="hidden" id="id-obj">
+                    <div class="grupo-campo">
+                        <label>CURP Paciente:</label>
+                        <input type="text" id="curp_paciente" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>ID Médico (Nombre):</label>
+                        <input type="text" id="id_medico" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Fecha:</label>
+                        <input type="date" id="fecha" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Hora:</label>
+                        <input type="time" id="hora" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Motivo:</label>
+                        <input type="text" id="motivo" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Estado:</label>
+                        <select id="estado" required>
+                            <option value="Programada">Programada</option>
+                            <option value="Atendida">Atendida</option>
+                            <option value="Pendiente">Pendiente</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-guardar">Guardar Cita</button>
+                    <button type="button" class="btn-limpiar" onclick="limpiar()">Cancelar</button>
+                </form>
+            </div>
+            
+            <div class="tabla-contenedor">
+                <input type="text" id="buscador" class="busqueda" placeholder="Buscar en la tabla..." onkeyup="filtrarTabla()">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paciente (CURP)</th>
+                            <th>Médico</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Motivo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla"></tbody>
+                </table>
+            </div>
+        </div>
+    </article>
+
+    <footer>
+        <p><strong>Consultorio Médico OVC</strong></p>
+        <p>Ortega Villanueva César | 24308051280879 | 4° Semestre Grupo J | Programación</p>
+        <p>Submódulo: Bases de Datos No Relacionales</p>
+    </footer>
+
+    <script>
+        const API = '/api/citas';
+        
+        function cargar() {
+            fetch(API).then(r => r.json()).then(data => {
+                const tbody = document.getElementById('cuerpo-tabla');
+                tbody.innerHTML = '';
+                data.forEach(d => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${d.curp_paciente || ''}</td>
+                            <td>${d.id_medico || ''}</td>
+                            <td>${d.fecha || ''}</td>
+                            <td>${d.hora || ''}</td>
+                            <td>${d.motivo || ''}</td>
+                            <td>${d.estado || ''}</td>
+                            <td>
+                                <button class="btn-editar" onclick="editar('${d._id}')">Editar</button>
+                                <button class="btn-eliminar" onclick="borrar('${d._id}')">Borrar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        document.getElementById('form-citas').addEventListener('submit', e => {
+            e.preventDefault();
+            const payload = {
+                curp_paciente: document.getElementById('curp_paciente').value,
+                id_medico: document.getElementById('id_medico').value,
+                fecha: document.getElementById('fecha').value,
+                hora: document.getElementById('hora').value,
+                motivo: document.getElementById('motivo').value,
+                estado: document.getElementById('estado').value
+            };
+            const id = document.getElementById('id-obj').value;
+
+            if (id) {
+                fetch(API + '/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+                    .then(() => { alert("Guardado exitosamente"); limpiar(); cargar(); });
+            } else {
+                fetch(API, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+                    .then(() => { alert("Guardado exitosamente"); limpiar(); cargar(); });
+            }
+        });
+
+        function limpiar() {
+            document.getElementById('id-obj').value = '';
+            document.getElementById('form-citas').reset();
+        }
+
+        function borrar(id) {
+            const pwd = prompt("Contraseña de Admin:");
+            if (pwd === "admin") {
+                fetch(API + '/' + id, { method: 'DELETE' }).then(() => cargar());
+            } else { alert("Acceso denegado"); }
+        }
+
+        function editar(id) {
+            const pwd = prompt("Contraseña de Admin:");
+            if (pwd === "admin") {
+                fetch(API).then(r => r.json()).then(data => {
+                    const obj = data.find(x => x._id === id);
+                    if (obj) {
+                        document.getElementById('id-obj').value = obj._id;
+                        document.getElementById('curp_paciente').value = obj.curp_paciente || '';
+                        document.getElementById('id_medico').value = obj.id_medico || '';
+                        document.getElementById('fecha').value = obj.fecha || '';
+                        document.getElementById('hora').value = obj.hora || '';
+                        document.getElementById('motivo').value = obj.motivo || '';
+                        document.getElementById('estado').value = obj.estado || '';
+                    }
+                });
+            } else { alert("Acceso denegado"); }
+        }
+
+        function filtrarTabla() {
+            const filtro = document.getElementById("buscador").value.toLowerCase();
+            const filas = document.querySelectorAll("#cuerpo-tabla tr");
+            filas.forEach(fila => {
+                const texto = fila.innerText.toLowerCase();
+                fila.style.display = texto.includes(filtro) ? "" : "none";
+            });
+        }
+
+        cargar();
+    </script>
+</body>
+</html>

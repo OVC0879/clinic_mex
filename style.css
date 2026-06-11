@@ -1,0 +1,166 @@
+body{
+    font-family: Arial, sans-serif;
+    margin:0;
+    background-color:#f4f4f4;
+}
+header{
+    background-color:gray;
+    color:white;
+    text-align:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:20px;
+    padding:15px;
+}
+header img{
+    height:60px;
+}
+.menu-nav {
+    background-color:lightgray;
+    padding:10px;
+    display:flex;
+    justify-content:center;
+    gap:20px;
+}
+.menu-nav a {
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 5px;
+    color: black;
+    transition: background 0.3s, color 0.3s;
+}
+.menu-nav a:hover, .menu-nav a.active {
+    background-color: gray;
+    color: white;
+}
+.contenido-pagina {
+    width: 95%;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+}
+article{
+    padding: 20px;
+    min-height: 600px; 
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+}
+th,td{
+    border:1px solid black;
+    padding:8px;
+    text-align:center;
+}
+th{
+    background-color:gray;
+    color:white;
+}
+h2{
+    text-align:center;
+}
+footer{
+    background-color:gray;
+    color:white;
+    text-align:center;
+    padding:10px;
+    margin-top:20px;
+}
+.inicio{
+    text-align:center;
+    background:white;
+    padding:20px;
+    margin-bottom: 20px;
+}
+.seccion-grid {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+.formulario-contenedor {
+    width: 30%;
+    background: #fafafa;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);
+}
+.formulario-contenedor h3 {
+    margin-top: 0;
+    text-align: center;
+    color: #333;
+    border-bottom: 2px solid gray;
+    padding-bottom: 5px;
+}
+.grupo-campo {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+}
+.grupo-campo label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #444;
+}
+.grupo-campo input, .grupo-campo select {
+    padding: 6px;
+    border: 1px solid #999;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.btn-guardar {
+    width: 100%;
+    padding: 10px;
+    background-color: gray;
+    color: white;
+    border: none;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+.btn-guardar:hover {
+    background-color: #555;
+}
+.btn-limpiar {
+    width: 100%;
+    padding: 10px;
+    background-color: #ccc;
+    color: black;
+    border: none;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn-limpiar:hover {
+    background-color: #aaa;
+}
+.tabla-contenedor {
+    width: 70%;
+    overflow-x: auto;
+}
+.btn-editar, .btn-eliminar {
+    padding: 5px 10px;
+    margin: 2px;
+    border: none;
+    cursor: pointer;
+    color: white;
+    border-radius: 3px;
+}
+.btn-editar { background-color: #4CAF50; }
+.btn-eliminar { background-color: #f44336; }
+
+.busqueda {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pacientes - Consultorio OVC</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Consultorio Médico OVC</h1>
+        <img src="img.jpg" alt="Consultorio Médico">
+    </header>
+
+    <nav class="menu-nav">
+        <a href="index.html">Inicio</a>
+        <a href="pacientes.html" class="active">Pacientes</a>
+        <a href="medicos.html">Médicos</a>
+        <a href="inventario.html">Inventario</a>
+        <a href="citas.html">Citas</a>
+        <a href="pagos.html">Pagos</a>
+    </nav>
+
+    <article>
+        <h2>Gestión de Pacientes</h2>
+        <div class="seccion-grid">
+            <div class="formulario-contenedor">
+                <h3>Registrar Paciente</h3>
+                <form id="form-paciente">
+                    <input type="hidden" id="id-obj">
+                    <div class="grupo-campo">
+                        <label>CURP:</label>
+                        <input type="text" id="curp" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Nombre:</label>
+                        <input type="text" id="nombre" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Apellido:</label>
+                        <input type="text" id="apellido" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Fecha Nacimiento:</label>
+                        <input type="date" id="fecha_nac" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Género:</label>
+                        <select id="genero" required>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                        </select>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Teléfono:</label>
+                        <input type="tel" id="telefono" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Email:</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Dirección:</label>
+                        <input type="text" id="direccion" required>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Tipo de Sangre:</label>
+                        <select id="tipo_sangre" required>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                        </select>
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Fecha de Registro:</label>
+                        <input type="date" id="fecha_reg" required>
+                    </div>
+                    <button type="submit" class="btn-guardar">Guardar Paciente</button>
+                    <button type="button" class="btn-limpiar" onclick="limpiar()">Cancelar</button>
+                </form>
+            </div>
+            
+            <div class="tabla-contenedor">
+                <input type="text" id="buscador" class="busqueda" placeholder="Buscar en la tabla..." onkeyup="filtrarTabla()">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>CURP</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Nacimiento</th>
+                            <th>Género</th>
+                            <th>Sangre</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla"></tbody>
+                </table>
+            </div>
+        </div>
+    </article>
+
+    <footer>
+        <p><strong>Consultorio Médico OVC</strong></p>
+        <p>Ortega Villanueva César | 24308051280879 | 4° Semestre Grupo J | Programación</p>
+        <p>Submódulo: Bases de Datos No Relacionales</p>
+    </footer>
+
+    <script>
+        const API = '/api/pacientes';
+        
+        function cargar() {
+            fetch(API).then(r => r.json()).then(data => {
+                const tbody = document.getElementById('cuerpo-tabla');
+                tbody.innerHTML = '';
+                data.forEach(d => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${d.curp || ''}</td>
+                            <td>${d.nombre || ''}</td>
+                            <td>${d.apellido || ''}</td>
+                            <td>${d.fecha_nac || ''}</td>
+                            <td>${d.genero || ''}</td>
+                            <td>${d.tipo_sangre || ''}</td>
+                            <td>
+                                <button class="btn-editar" onclick="editar('${d._id}')">Editar</button>
+                                <button class="btn-eliminar" onclick="borrar('${d._id}')">Borrar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        document.getElementById('form-paciente').addEventListener('submit', e => {
+            e.preventDefault();
+            const payload = {
+                curp: document.getElementById('curp').value,
+                nombre: document.getElementById('nombre').value,
+                apellido: document.getElementById('apellido').value,
+                fecha_nac: document.getElementById('fecha_nac').value,
+                genero: document.getElementById('genero').value,
+                telefono: document.getElementById('telefono').value,
+                email: document.getElementById('email').value,
+                direccion: document.getElementById('direccion').value,
+                tipo_sangre: document.getElementById('tipo_sangre').value,
+                fecha_reg: document.getElementById('fecha_reg').value
+            };
+            const id = document.getElementById('id-obj').value;
+
+            if (id) {
+                fetch(API + '/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+                    .then(() => { alert("Guardado exitosamente"); limpiar(); cargar(); });
+            } else {
+                fetch(API, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+                    .then(() => { alert("Guardado exitosamente"); limpiar(); cargar(); });
+            }
+        });
+
+        function limpiar() {
+            document.getElementById('id-obj').value = '';
+            document.getElementById('form-paciente').reset();
+        }
+
+        function borrar(id) {
+            const pwd = prompt("Contraseña de Admin:");
+            if (pwd === "admin") {
+                fetch(API + '/' + id, { method: 'DELETE' }).then(() => cargar());
+            } else { alert("Acceso denegado"); }
+        }
+
+        function editar(id) {
+            const pwd = prompt("Contraseña de Admin:");
+            if (pwd === "admin") {
+                fetch(API).then(r => r.json()).then(data => {
+                    const obj = data.find(x => x._id === id);
+                    if (obj) {
+                        document.getElementById('id-obj').value = obj._id;
+                        document.getElementById('curp').value = obj.curp || '';
+                        document.getElementById('nombre').value = obj.nombre || '';
+                        document.getElementById('apellido').value = obj.apellido || '';
+                        document.getElementById('fecha_nac').value = obj.fecha_nac || '';
+                        document.getElementById('genero').value = obj.genero || '';
+                        document.getElementById('telefono').value = obj.telefono || '';
+                        document.getElementById('email').value = obj.email || '';
+                        document.getElementById('direccion').value = obj.direccion || '';
+                        document.getElementById('tipo_sangre').value = obj.tipo_sangre || '';
+                        document.getElementById('fecha_reg').value = obj.fecha_reg || '';
+                    }
+                });
+            } else { alert("Acceso denegado"); }
+        }
+
+        function filtrarTabla() {
+            const filtro = document.getElementById("buscador").value.toLowerCase();
+            const filas = document.querySelectorAll("#cuerpo-tabla tr");
+            filas.forEach(fila => {
+                const texto = fila.innerText.toLowerCase();
+                fila.style.display = texto.includes(filtro) ? "" : "none";
+            });
+        }
+
+        cargar();
+    </script>
+</body>
+</html>
